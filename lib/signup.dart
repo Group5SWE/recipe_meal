@@ -1,13 +1,12 @@
 import 'package:flutter/material.dart';
-import 'homeScreen.dart';
-import 'signup.dart';
+import 'login.dart';
 
-class LoginScreen extends StatelessWidget {
+class SignupScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('ReciPlan'),
+        title: Text('Login'),
         actions: [
           IconButton(
             icon: Icon(Icons.account_circle),
@@ -32,7 +31,7 @@ class LoginScreen extends StatelessWidget {
             ),
             SizedBox(height: 10),
             Text(
-              'Login to get Started',
+              'Sign up for free to get started with your meal planning',
               style: TextStyle(
                 fontSize: 18.0,
               ),
@@ -40,15 +39,35 @@ class LoginScreen extends StatelessWidget {
             TextField(
               decoration: InputDecoration(
               border: OutlineInputBorder(),
+              hintText: 'First Name',
+              ),
+            ),
+            SizedBox(height: 5),
+            TextField(
+              decoration: InputDecoration(
+              border: OutlineInputBorder(),
+              hintText: 'Last Name',
+              ),
+            ),
+            SizedBox(height: 5),
+            TextField(
+              decoration: InputDecoration(
+              border: OutlineInputBorder(),
               hintText: 'Username',
               ),
             ),
-            SizedBox(height: 20),
-
+            SizedBox(height: 5),
             TextField(
               decoration: InputDecoration(
               border: OutlineInputBorder(),
               hintText: 'Password',
+              ),
+            ),
+            SizedBox(height: 5),
+            TextField(
+              decoration: InputDecoration(
+              border: OutlineInputBorder(),
+              hintText: 'Confirm Password',
               ),
             ),
             SizedBox(height: 30),
@@ -60,12 +79,12 @@ class LoginScreen extends StatelessWidget {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => HomeScreen(),
+                          builder: (context) => LoginScreen(),
                         ),
                       );
                     },
               
-                    label: Text('Login'),
+                    label: Text('Sign Up'),
                     icon: Icon(Icons.arrow_right),
                     style: ElevatedButton.styleFrom(
                       padding: EdgeInsets.symmetric(vertical: 20, horizontal: 40),
@@ -73,33 +92,19 @@ class LoginScreen extends StatelessWidget {
                       textStyle: TextStyle(fontSize: 20, color: Colors.white), 
                     ),
                   ),
-                  SizedBox(height: 20),
+                  SizedBox(height: 30),
                   ElevatedButton.icon(
                     onPressed: () {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => SignupScreen(),
+                          builder: (context) => LoginScreen(),
                         ),
-                      ); },
-                    label: Text('Not a Member? Sign Up'),
-                    style: ElevatedButton.styleFrom(
-                      padding: EdgeInsets.symmetric(vertical: 20, horizontal: 40),
-                      backgroundColor: Colors.blue,
-                      textStyle: TextStyle(fontSize: 20, color: Colors.white), 
-                    ),
-                  ),
-                  SizedBox(height: 20),
-                  ElevatedButton.icon(
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => HomeScreen(),
-                        ),
-                      ); 
+                      );
                     },
-                    label: Text('Sign in as guest'),
+              
+                    label: Text('Already a Member? Login'),
+                    icon: Icon(Icons.arrow_left),
                     style: ElevatedButton.styleFrom(
                       padding: EdgeInsets.symmetric(vertical: 20, horizontal: 40),
                       backgroundColor: Colors.blue,
