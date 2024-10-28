@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
 import 'homeScreen.dart';
 import 'signup.dart';
+import 'database_helper.dart';
 
 class LoginScreen extends StatelessWidget {
+  final TextEditingController usernameController = TextEditingController();
+  final TextEditingController passwordController = TextEditingController();
+  final DatabaseHelper _db = DatabaseHelper();
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -38,6 +42,7 @@ class LoginScreen extends StatelessWidget {
               ),
             ),
             TextField(
+              controller: usernameController,
               decoration: InputDecoration(
               border: OutlineInputBorder(),
               hintText: 'Username',
@@ -46,6 +51,7 @@ class LoginScreen extends StatelessWidget {
             SizedBox(height: 20),
 
             TextField(
+              controller: passwordController,
               decoration: InputDecoration(
               border: OutlineInputBorder(),
               hintText: 'Password',
@@ -56,14 +62,30 @@ class LoginScreen extends StatelessWidget {
               child: Column(
                 children: [
                   ElevatedButton.icon(
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => HomeScreen(),
-                        ),
-                      );
-                    },
+                     onPressed: () async {
+                        if (usernameController.text.isEmpty || passwordController.text.isEmpty) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('Please enter both email and password')),
+                          );
+                          return;
+                        }
+
+                        bool isAuthenticated = await _db.authenticateUser(
+                          usernameController.text,
+                          passwordController.text,
+                        );
+
+                        if (isAuthenticated) {
+                          Navigator.pushReplacement(
+                            context,
+                            MaterialPageRoute(builder: (context) => HomeScreen()),
+                          );
+                        } else {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('Invalid credentials')),
+                          );
+                        }
+                      },
               
                     label: Text('Login'),
                     icon: Icon(Icons.arrow_right),

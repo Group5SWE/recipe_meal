@@ -1,11 +1,13 @@
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
-import 'package:path_provider/path_provider.dart';
 
 class DatabaseHelper {
-  static const _databaseName = "MyDatabase.db";
-  static const _databaseVersion = 1;
-  static const table = 'user_info';
+  static final DatabaseHelper _instance = DatabaseHelper._internal();
+  factory DatabaseHelper() => _instance;
+
+  DatabaseHelper._internal();
+
+  static const table = 'users';
   
   static const columnFirstName = 'first_name';
   static const columnLastName = 'last_name';
@@ -15,44 +17,35 @@ class DatabaseHelper {
 
   late Database _db;
 
-  // This opens the database (and creates it if it doesn't exist)
-  Future<void> init() async {
-    final documentsDirectory = await getApplicationDocumentsDirectory();
-    final path = join(documentsDirectory.path, _databaseName);
-    _db = await openDatabase(
-      path,
-      version: _databaseVersion,
-      onCreate: _onCreate,
-    );
+
+  Database? _database;
+
+  Future<Database> get database async {
+    if (_database != null) return _database!;
+    _database = await _initDB();
+    return _database!;
   }
 
+  Future<Database> _initDB() async {
+    String path = join(await getDatabasesPath(), 'recipe_app.db');
+    return await openDatabase(
+      path,
+      version: 1,
+      onCreate: (db, version) async {
+        // Enable foreign key support
+        await db.execute('PRAGMA foreign_keys = ON');
   // SQL code to create the database table
-  Future _onCreate(Database db, int version) async {
-    await db.execute('''
-      CREATE TABLE $table (
-        $columnFirstName TEXT NOT NULL
-        CHECK(
-        length($columnFirstName) >= 2 AND
-        length($columnFirstName) <= 20
-        )
-        ,
-        $columnLastName TEXT NOT NULL,
-        CHECK(
-        length($columnLastName) >= 2 AND
-        length($columnLastName) <= 20
-        )
-        $columnUsername TEXT NOT NULL,
-        CHECK(
-        length($columnUsername) >= 6 AND
-        length($columnUsername) <= 15
-        )
-        $columnPassword TEXT NOT NULL,
-        CHECK(
-        length($columnPassword) >= 8 AND
-        length($columnPassword) <= 20
-        )
-      )
-    ''');
+        await db.execute('''
+          CREATE TABLE users(
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            first_name TEXT,
+            last_name INTEGER,
+            username TEXT UNIQUE,
+            password TEXT
+          )
+        ''');
+      },
+    );
   }
 
   // Helper methods
@@ -61,6 +54,38 @@ class DatabaseHelper {
   // and the value is the column value. The return value is the id of the inserted row.
   Future<int> insert(Map<String, dynamic> row) async {
     return await _db.insert(table, row);
+  }
+
+  Future<void> insertUser(String firstName, String lastName, String username, String password) async {
+    final db = await database;
+    await db.insert(
+      'users',
+      {'first_name': firstName, 'last_name': lastName, 'username': username, 'password': password},
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
+  }
+
+  Future<bool> authenticateUser(String username, String password) async {
+    final db = await database;
+    final List<Map<String, dynamic>> maps = await db.query(
+      'users',
+      where: 'username = ? AND password = ?',
+      whereArgs: [username, password],
+    );
+    return maps.isNotEmpty;
+  }
+
+  Future<Map<String, dynamic>?> getUserByUsername(String username) async {
+    final db = await database;
+    final List<Map<String, dynamic>> maps = await db.query(
+      'users',
+      where: 'username = ?',
+      whereArgs: [username],
+    );
+    if (maps.isNotEmpty) {
+      return maps.first;
+    }
+    return null;
   }
 
   // All of the rows are returned as a list of maps, where each map is a key-value list of columns.

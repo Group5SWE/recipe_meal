@@ -1,7 +1,14 @@
 import 'package:flutter/material.dart';
 import 'login.dart';
+import 'database_helper.dart';
 
 class SignupScreen extends StatelessWidget {
+  final TextEditingController usernameController = TextEditingController();
+  final TextEditingController passwordController = TextEditingController();
+  final TextEditingController passwordConfirmController = TextEditingController();
+  final TextEditingController firstNameController = TextEditingController();
+  final TextEditingController lastNameController = TextEditingController();
+  final DatabaseHelper _db = DatabaseHelper();
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -37,6 +44,7 @@ class SignupScreen extends StatelessWidget {
               ),
             ),
             TextField(
+              controller: firstNameController,
               decoration: InputDecoration(
               border: OutlineInputBorder(),
               hintText: 'First Name',
@@ -44,6 +52,7 @@ class SignupScreen extends StatelessWidget {
             ),
             SizedBox(height: 5),
             TextField(
+              controller: lastNameController,
               decoration: InputDecoration(
               border: OutlineInputBorder(),
               hintText: 'Last Name',
@@ -51,6 +60,7 @@ class SignupScreen extends StatelessWidget {
             ),
             SizedBox(height: 5),
             TextField(
+              controller: usernameController,
               decoration: InputDecoration(
               border: OutlineInputBorder(),
               hintText: 'Username',
@@ -58,6 +68,7 @@ class SignupScreen extends StatelessWidget {
             ),
             SizedBox(height: 5),
             TextField(
+              controller: passwordController,
               decoration: InputDecoration(
               border: OutlineInputBorder(),
               hintText: 'Password',
@@ -65,6 +76,7 @@ class SignupScreen extends StatelessWidget {
             ),
             SizedBox(height: 5),
             TextField(
+              controller: passwordConfirmController,
               decoration: InputDecoration(
               border: OutlineInputBorder(),
               hintText: 'Confirm Password',
@@ -75,13 +87,67 @@ class SignupScreen extends StatelessWidget {
               child: Column(
                 children: [
                   ElevatedButton.icon(
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => LoginScreen(),
-                        ),
-                      );
+                                        onPressed: () async {
+                      if (firstNameController.text.isEmpty ||
+                          lastNameController.text.isEmpty ||
+                          usernameController.text.isEmpty ||
+                          passwordController.text.isEmpty) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Please fill in all fields')),                          
+                        );
+                        return;
+                      }
+                      else if (firstNameController.text.length < 2){
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Please enter a first name longer than 2 letters')),
+                        );
+                        return;                           
+                      }
+                      else if (lastNameController.text.length < 2){
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Please enter a last name longer than 2 letters')),
+                        );
+                        return;                           
+                      }
+                      else if (usernameController.text.length < 6){
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Please enter a username longer than 2 characters')),
+                        );
+                        return;                           
+                      }
+                      else if (passwordController.text.length < 8){
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Please enter a password longer than 8 characters')),
+                        );
+                        return;                           
+                      }
+                      else if (passwordController.text != passwordConfirmController.text){
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Your passwords do not match. Please try again')),
+                        );
+                        return;                           
+                      }                      
+                      try {
+                        await _db.insertUser(
+                          firstNameController.text,
+                          lastNameController.text,
+                          usernameController.text,
+                          passwordController.text,
+                        );
+                        
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Account created successfully!')),
+                        );
+
+                        Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(builder: (context) => LoginScreen()),
+                        );
+                      } catch (e) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Error creating account')),
+                        );
+                      }
                     },
               
                     label: Text('Sign Up'),
@@ -100,7 +166,7 @@ class SignupScreen extends StatelessWidget {
                         MaterialPageRoute(
                           builder: (context) => LoginScreen(),
                         ),
-                      );
+                      ); 
                     },
               
                     label: Text('Already a Member? Login'),
